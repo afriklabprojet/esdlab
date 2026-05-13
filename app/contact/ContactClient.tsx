@@ -6,14 +6,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { fadeIn, staggerContainer } from "@/lib/animations";
 import { trackEvent } from "@/components/Analytics";
 
+interface FaqItem { q: string; a: string }
+
 interface ContactClientProps {
   whatsappHref: string;
   email: string;
   phone: string;
   address: string;
+  faqItems?: FaqItem[];
 }
 
-const FAQ_ITEMS = [
+const FAQ_ITEMS_DEFAULT: FaqItem[] = [
   {
     q: "Pourquoi choisir DigiLab ?",
     a: "DigiLab apporte une expertise de plus de 10 ans dans le digital signage et l'affichage dynamique. Nous proposons des solutions clé en main, de l'installation à la maintenance, avec un accompagnement personnalisé pour chaque client.",
@@ -175,7 +178,9 @@ export default function ContactClient({
   email,
   phone,
   address,
+  faqItems,
 }: Readonly<ContactClientProps>) {
+  const resolvedFaqItems = faqItems && faqItems.length > 0 ? faqItems : FAQ_ITEMS_DEFAULT;
   const router = useRouter();
 
   const [formData, setFormData] = useState({
@@ -871,7 +876,7 @@ export default function ContactClient({
             viewport={{ once: true }}
             className="divide-y divide-slate-100 rounded-2xl border border-slate-100 bg-white px-6 shadow-elegant"
           >
-            {FAQ_ITEMS.map((item) => (
+            {resolvedFaqItems.map((item) => (
               <FaqItem key={item.q} q={item.q} a={item.a} />
             ))}
           </motion.div>

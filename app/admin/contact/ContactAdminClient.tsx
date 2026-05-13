@@ -2,6 +2,88 @@
 
 import { useState } from "react";
 
+// ─── FAQ item type ────────────────────────────────────────────────────────────
+interface FaqItem { q: string; a: string }
+
+const DEFAULT_FAQ: FaqItem[] = [
+  { q: "Pourquoi choisir DigiLab ?", a: "DigiLab apporte une expertise de plus de 10 ans dans le digital signage et l'affichage dynamique. Nous proposons des solutions clé en main, de l'installation à la maintenance, avec un accompagnement personnalisé pour chaque client." },
+  { q: "Quelles solutions commercialisez-vous ?", a: "Nous proposons des bornes interactives tactiles, des chevalets numériques, des écrans numériques interactifs (ENI), des écrans vitrine haute luminosité, ainsi que des applications logicielles pour piloter l'ensemble de votre parc d'écrans." },
+  { q: "Proposez-vous des solutions en location ?", a: "Oui. Nous proposons des solutions de location courte et longue durée, idéales pour les événements ponctuels ou pour étaler le coût de vos équipements dans le temps." },
+  { q: "Comment se passe l'installation ?", a: "Notre équipe technique prend en charge l'installation complète sur site. Nous assurons la formation de vos équipes et garantissons un suivi post-installation rigoureux." },
+  { q: "Disposez-vous d'un service après-vente ?", a: "Oui. Nous disposons d'un SAV réactif avec des techniciens disponibles pour intervenir rapidement. Nous proposons également des contrats de maintenance préventive." },
+];
+
+function parseFaqItems(raw: string | undefined): FaqItem[] {
+  if (!raw) return DEFAULT_FAQ;
+  try { const v = JSON.parse(raw); return Array.isArray(v) ? v : DEFAULT_FAQ; } catch { return DEFAULT_FAQ; }
+}
+
+// ─── FAQ Editor ───────────────────────────────────────────────────────────────
+function FaqEditor({ items, onChange }: Readonly<{ items: FaqItem[]; onChange: (items: FaqItem[]) => void }>) {
+  function update(i: number, field: "q" | "a", val: string) {
+    const next = items.map((item, idx) => idx === i ? { ...item, [field]: val } : item);
+    onChange(next);
+  }
+  function remove(i: number) { onChange(items.filter((_, idx) => idx !== i)); }
+  function moveUp(i: number) {
+    if (i === 0) return;
+    const next = [...items];
+    [next[i - 1], next[i]] = [next[i], next[i - 1]];
+    onChange(next);
+  }
+  function moveDown(i: number) {
+    if (i === items.length - 1) return;
+    const next = [...items];
+    [next[i], next[i + 1]] = [next[i + 1], next[i]];
+    onChange(next);
+  }
+  function add() { onChange([...items, { q: "", a: "" }]); }
+
+  return (
+    <div className="space-y-3">
+      {items.map((item, i) => (
+        <div key={i} className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">#{i + 1}</span>
+            <div className="flex items-center gap-1">
+              <button type="button" onClick={() => moveUp(i)} disabled={i === 0}
+                className="p-1 rounded text-slate-400 hover:text-slate-700 disabled:opacity-30 transition">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7"/></svg>
+              </button>
+              <button type="button" onClick={() => moveDown(i)} disabled={i === items.length - 1}
+                className="p-1 rounded text-slate-400 hover:text-slate-700 disabled:opacity-30 transition">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <button type="button" onClick={() => remove(i)}
+                className="p-1 rounded text-slate-400 hover:text-red-600 transition ml-1">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+          </div>
+          <input
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium"
+            placeholder="Question"
+            value={item.q}
+            onChange={(e) => update(i, "q", e.target.value)}
+          />
+          <textarea
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="Réponse"
+            rows={3}
+            value={item.a}
+            onChange={(e) => update(i, "a", e.target.value)}
+          />
+        </div>
+      ))}
+      <button type="button" onClick={add}
+        className="flex items-center gap-1.5 text-sm font-semibold text-primary-700 hover:text-primary-900 transition">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Ajouter une question
+      </button>
+    </div>
+  );
+}
+
 // ─── Shared styles ────────────────────────────────────────────────────────────
 const inp = "w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white transition";
 const ta  = "w-full px-3 py-2.5 border border-slate-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white transition";
@@ -38,6 +120,7 @@ interface ContactAdminClientProps {
 
 export default function ContactAdminClient({ initial }: ContactAdminClientProps) {
   const [values, setValues] = useState<Record<string, string>>(initial);
+  const [faqItems, setFaqItems] = useState<FaqItem[]>(() => parseFaqItems(initial["contact.faq_items"]));
   const [saving, setSaving] = useState(false);
   const [msg, setMsg]       = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
@@ -49,10 +132,11 @@ export default function ContactAdminClient({ initial }: ContactAdminClientProps)
     setSaving(true);
     setMsg(null);
     try {
+      const payload = { ...values, "contact.faq_items": JSON.stringify(faqItems) };
       const res = await fetch("/api/admin/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         setMsg({ type: "ok", text: "Modifications enregistrées — visibles sur le site." });
@@ -169,25 +253,16 @@ export default function ContactAdminClient({ initial }: ContactAdminClientProps)
       </Card>
 
       {/* ── Card 5 : FAQ ───────────────────────────────────────────────────── */}
-      <Card title="FAQ" description="Section de questions fréquentes affichée en bas de la page Contact.">
+      <Card title="FAQ" description="Questions fréquentes affichées en bas de la page Contact.">
         <Field label="Titre de la section FAQ" hint='Ex : "Questions fréquentes".'>
           <input className={inp} placeholder="Questions fréquentes"
             value={values["contact.faq_title"] ?? ""}
             onChange={(e) => handleChange("contact.faq_title", e.target.value)}
           />
         </Field>
-        <div className="flex items-start gap-3 px-4 py-3.5 bg-amber-50 border border-amber-200 rounded-xl">
-          <svg className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 8v4m0 4h.01" />
-          </svg>
-          <div>
-            <p className="text-sm font-semibold text-amber-800">Questions et réponses hardcodées</p>
-            <p className="text-xs text-amber-700 mt-0.5">
-              Les questions et réponses de la FAQ sont définies directement dans le code source (composant FAQ de la page Contact). Pour les modifier, éditez le fichier correspondant dans le projet.
-            </p>
-          </div>
-        </div>
+        <Field label="Questions & Réponses" hint="Ajoutez, modifiez ou réordonnez les entrées FAQ.">
+          <FaqEditor items={faqItems} onChange={setFaqItems} />
+        </Field>
       </Card>
 
     </div>
