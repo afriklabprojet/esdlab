@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export default function AdminLoginPage() {
-  const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -22,11 +22,12 @@ export default function AdminLoginPage() {
       redirect: false,
     });
 
-    if (res?.error) {
+    if (res?.error || !res?.ok) {
       setError("Identifiants incorrects.");
       setLoading(false);
     } else {
-      router.push("/admin/leads");
+      const callbackUrl = searchParams.get("callbackUrl") || "/admin";
+      window.location.href = callbackUrl;
     }
   };
 
