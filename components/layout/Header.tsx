@@ -231,10 +231,6 @@ export default function Header({
             </span>
           </div>
           <div className="flex shrink-0 items-center gap-7">
-            <Link href={resellerHref} className="font-semibold text-white transition-colors hover:text-secondary-100">
-              {resellerLabel}
-            </Link>
-            <span className="h-4 w-px bg-white/30" />
             <Link
               href={quoteHref}
               className="rounded-md bg-white px-5 py-2.5 font-semibold text-secondary-800 shadow-[0_8px_18px_rgba(61,22,6,0.22)] transition-colors hover:bg-secondary-50"
