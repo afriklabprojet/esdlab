@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import AdminShell from "./AdminShell";
+import MaintenanceBanner from "./MaintenanceBanner";
 
 export const metadata: Metadata = {
   title: "Admin | ESDLab Technologies",
@@ -20,8 +21,12 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
 
   const newLeadsCount = await prisma.lead.count({ where: { status: "nouveau" } });
 
+  const maintRow = await prisma.setting.findUnique({ where: { key: "site.maintenance" } });
+  const maintenanceActive = maintRow?.value === "true";
+
   return (
     <AdminShell user={session.user} newLeadsCount={newLeadsCount}>
+      {maintenanceActive && <MaintenanceBanner />}
       {children}
     </AdminShell>
   );
