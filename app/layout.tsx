@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Analytics from "@/components/Analytics";
 import PublicChrome from "@/components/layout/PublicChrome";
+import BrandInjector from "@/components/BrandInjector";
 import { getSettings } from "@/lib/getSettings";
 import prisma from "@/lib/prisma";
 
@@ -124,6 +125,9 @@ export default async function RootLayout({
   ]);
   return (
     <html lang="fr" className={`${plusJakarta.variable} ${cormorant.variable}`}>
+      <head>
+        <BrandInjector />
+      </head>
       <body className="font-sans antialiased bg-slate-50 text-slate-900">
         <Analytics />
         <a
