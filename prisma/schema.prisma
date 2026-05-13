@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Lead {
+  id         String     @id @default(cuid())
+  name       String
+  email      String
+  phone      String?
+  company    String?
+  secteur    String?
+  taille     String?
+  besoin     String?
+  message    String?
+  source     String?
+  campaign   String?
+  status     String     @default("nouveau") // nouveau | qualifie | contacte | demo | gagne | perdu
+  assignedTo String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  notes      LeadNote[]
+}
+
+model LeadNote {
+  id        String   @id @default(cuid())
+  leadId    String
+  authorId  String?
+  note      String
+  createdAt DateTime @default(now())
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  passwordHash String
+  role         String    @default("commercial") // admin | editor | commercial
+  status       String    @default("active") // active | inactive
+  createdAt    DateTime  @default(now())
+  lastLoginAt  DateTime?
+}
+
+model Service {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  subtitle        String
+  description     String
+  longDescription String?
+  image           String?
+  icon            String?
+  color           String?
+  // JSON strings (compat SQLite/MySQL)
+  features        String   @default("[]")
+  benefits        String   @default("[]")
+  process         String   @default("[]")
+  technologies    String   @default("[]")
+  category        String   @default("service") // "service" | "secteur"
+  order           Int      @default(0)
+  published       Boolean  @default(true)
+  seoTitle        String?
+  seoDescription  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Page {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  title          String
+  content        String   @default("")
+  heroImage      String?
+  seoTitle       String?
+  seoDescription String?
+  published      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Setting {
+  key       String   @id
+  value     String   @default("")
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  kicker          String
+  tagline         String
+  description     String
+  longDescription String?
+  image           String?
+  gallery         String   @default("[]") // JSON string[]
+  iconKey         String?
+  features        String   @default("[]") // JSON string[]
+  benefits        String   @default("[]") // JSON {title,description}[]
+  useCases        String   @default("[]") // JSON {title,description,icon?}[]
+  specs           String   @default("[]") // JSON {label,value}[]
+  relatedSlugs    String   @default("[]") // JSON string[]
+  order           Int      @default(0)
+  published       Boolean  @default(true)
+  seoTitle        String?
+  seoDescription  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  filename  String
+  url       String
+  alt       String?
+  width     Int?
+  height    Int?
+  size      Int?
+  mimeType  String?
+  createdAt DateTime @default(now())
+}
